@@ -90,3 +90,26 @@ def root():
             "docs": "/docs"
         }
     }
+
+from .compass import build_compass_response
+
+@app.get("/compass/status")
+def get_compass_status(
+    market_id: str,
+    tier: str = "free",
+    db: Session = Depends(get_db)
+):
+    if market_id not in MARKETS:
+        raise HTTPException(status_code=404, detail="Market not found")
+
+    state = (
+        db.query(MarketState)
+        .filter(MarketState.market_id == market_id)
+        .order_by(MarketState.timestamp.desc())
+        .first()
+    )
+
+    if not state:
+        return {"message": "No data yet"}
+
+    return build_compass_response(state, tier)
