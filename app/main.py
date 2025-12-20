@@ -56,3 +56,11 @@ def healthcheck():
         "version": "0.1.0"
     }
 
+@app.get("/")
+def root():
+    return {
+        "name": "RegimeGuard API",
+        "status": "online",
+        "docs": "/docs",
+        "health": "/healthz"
+    }
