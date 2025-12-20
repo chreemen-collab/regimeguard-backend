@@ -1,7 +1,4 @@
-MARKETS = {
-    "BTC": {},
-    "ETH": {},
-    "SPY": {}
-}
+MARKETS = ["BTC", "ETH", "SPY"]
+
 
 ENGINE_UPDATE_MINUTES = 60
