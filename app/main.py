@@ -56,3 +56,18 @@ def root():
         }
     }
 
+from datetime import datetime
+
+@app.post("/debug/seed")
+def seed_state(db: Session = Depends(get_db)):
+    state = MarketState(
+        market_id="BTC",
+        regime="CALM",
+        risk=0.2,
+        exposure=0.3,
+        confidence=0.85,
+        timestamp=datetime.utcnow()
+    )
+    db.add(state)
+    db.commit()
+    return {"status": "seeded"}
