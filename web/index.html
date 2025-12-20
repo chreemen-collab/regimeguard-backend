@@ -1,0 +1,140 @@
+<h1>Know when to reduce risk.</h1>
+<h2>And when to do nothing.</h2>
+
+<p>
+RegimeGuard monitors market regimes and systemic risk
+to help you avoid overexposure during unstable periods.
+</p>
+
+<h3>The real problem</h3>
+
+<p>
+Most losses don’t come from bad ideas,
+but from operating during unstable market regimes.
+</p>
+
+<p>
+Overtrading, noise and emotional decisions
+are amplified when risk is misread.
+</p>
+
+<h3>What RegimeGuard does</h3>
+
+<ul>
+  <li>Detects market regimes (BASE / MICRO / HARD)</li>
+  <li>Measures systemic risk levels</li>
+  <li>Suggests risk exposure, not trades</li>
+  <li>Stays silent when confidence is low</li>
+</ul>
+
+<h3>Live market status</h3>
+
+<p>
+Crypto market is currently in a MICRO regime,
+with EXTREME risk detected.
+</p>
+
+<p>
+Suggested exposure: OFF
+</p>
+
+<h3>Early access</h3>
+
+<p>
+RegimeGuard is currently in private development.
+</p>
+
+<p>
+Join the early access list to follow progress
+and get access to future features.
+</p>
+
+<button>Join early access</button>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RegimeGuard</title>
+  <style>
+    body {
+      background: #0f1115;
+      color: #eaeaea;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    .card {
+      background: #1a1d24;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+    .label {
+      opacity: 0.6;
+      font-size: 14px;
+    }
+    .value {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .extreme {
+      color: #ff4d4d;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RegimeGuard</h1>
+
+  <div class="card">
+    <div class="label">Market</div>
+    <div class="value" id="market">—</div>
+
+    <div class="label">Regime</div>
+    <div class="value" id="regime">—</div>
+
+    <div class="label">Risk</div>
+    <div class="value extreme" id="risk">—</div>
+
+    <div class="label">Suggested Exposure</div>
+    <div class="value" id="exposure">—</div>
+
+    <div class="label">System Confidence</div>
+    <div class="value" id="confidence">—</div>
+  </div>
+
+  <script>
+  async function updateMarket() {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/market/crypto");
+      const data = await res.json();
+
+      document.getElementById("market").innerText = data.market;
+      document.getElementById("regime").innerText = data.regime;
+      document.getElementById("risk").innerText = data.risk;
+      document.getElementById("exposure").innerText = data.exposure;
+      document.getElementById("confidence").innerText = data.confidence;
+    } catch (e) {
+      console.log("API not reachable");
+    }
+  }
+
+  // primera carga
+  updateMarket();
+
+  // actualización automática cada 10 segundos
+  setInterval(updateMarket, 10000);
+</script>
+
+
+</body>
+</html>
+
+<p style="font-size:12px; opacity:0.5; margin-top:40px;">
+RegimeGuard provides informational analysis only.  
+It does not offer investment advice, trading signals, or execution services.  
+Users remain fully responsible for their decisions.
+</p>
+
