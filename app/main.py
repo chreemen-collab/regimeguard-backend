@@ -1,3 +1,4 @@
+from .compass import build_compass_response
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database import engine, Base, SessionLocal
@@ -29,6 +30,17 @@ def get_market_state(market_id: str, db: Session = Depends(get_db)):
     if market_id not in MARKETS:
         raise HTTPException(status_code=404, detail="Market not found")
 
+@app.get("/compass/status")
+def get_compass_status(
+    market_id: str,
+    tier: str = "free",
+    db: Session = Depends(get_db)
+):
+    if market_id not in MARKETS:
+        raise HTTPException(status_code=404, detail="Market not found")
+
+    return build_compass_response(db, market_id, tier)
+    
     state = (
         db.query(MarketState)
         .filter(MarketState.market_id == market_id)
