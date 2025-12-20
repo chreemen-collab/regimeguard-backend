@@ -1,10 +1,9 @@
-from .compass import build_compass_response
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database import engine, Base, SessionLocal
-from .models import MarketState
 from .scheduler import start_scheduler
 from .config import MARKETS
+from .compass import build_compass_response
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,11 +24,6 @@ def startup_event():
 def list_markets():
     return MARKETS
 
-@app.get("/market/{market_id}")
-def get_market_state(market_id: str, db: Session = Depends(get_db)):
-    if market_id not in MARKETS:
-        raise HTTPException(status_code=404, detail="Market not found")
-
 @app.get("/compass/status")
 def get_compass_status(
     market_id: str,
@@ -40,25 +34,6 @@ def get_compass_status(
         raise HTTPException(status_code=404, detail="Market not found")
 
     return build_compass_response(db, market_id, tier)
-    
-    state = (
-        db.query(MarketState)
-        .filter(MarketState.market_id == market_id)
-        .order_by(MarketState.timestamp.desc())
-        .first()
-    )
-
-    if not state:
-        return {"message": "No data yet"}
-
-    return {
-        "market": market_id,
-        "regime": state.regime,
-        "risk": state.risk,
-        "exposure": state.exposure,
-        "confidence": state.confidence,
-        "updated_at": state.timestamp
-    }
 
 @app.get("/healthz")
 def healthcheck():
@@ -73,43 +48,11 @@ def root():
     return {
         "name": "RegimeGuard API",
         "status": "online",
-        "docs": "/docs",
-        "health": "/healthz"
-    }
-
-@app.get("/")
-def root():
-    return {
-        "name": "RegimeGuard API",
-        "status": "online",
-        "version": "0.1.0",
         "endpoints": {
             "health": "/healthz",
             "markets": "/markets",
-            "market_state": "/market/{market_id}",
+            "compass": "/compass/status",
             "docs": "/docs"
         }
     }
 
-from .compass import build_compass_response
-
-@app.get("/compass/status")
-def get_compass_status(
-    market_id: str,
-    tier: str = "free",
-    db: Session = Depends(get_db)
-):
-    if market_id not in MARKETS:
-        raise HTTPException(status_code=404, detail="Market not found")
-
-    state = (
-        db.query(MarketState)
-        .filter(MarketState.market_id == market_id)
-        .order_by(MarketState.timestamp.desc())
-        .first()
-    )
-
-    if not state:
-        return {"message": "No data yet"}
-
-    return build_compass_response(state, tier)
