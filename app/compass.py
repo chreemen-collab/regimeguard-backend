@@ -78,3 +78,24 @@ def build_compass_response(
         }
 
     return {"error": "invalid tier"}
+
+import json
+from pathlib import Path
+
+TIERS = json.loads(
+    Path("app/tiers.json").read_text()
+)
+
+def build_compass_response(state, tier: str):
+    config = TIERS.get(tier, TIERS["free"])
+
+    data = {}
+
+    for field in config["fields"]:
+        data[field] = getattr(state, field)
+
+    data["tier"] = tier
+    data["delayed"] = config["delay_seconds"] > 0
+
+    return data
+
