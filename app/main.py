@@ -47,3 +47,12 @@ def get_market_state(market_id: str, db: Session = Depends(get_db)):
         "confidence": state.confidence,
         "updated_at": state.timestamp
     }
+
+@app.get("/healthz")
+def healthcheck():
+    return {
+        "status": "ok",
+        "service": "RegimeGuard",
+        "version": "0.1.0"
+    }
+
