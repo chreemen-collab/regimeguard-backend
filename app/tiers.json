@@ -1,0 +1,21 @@
+{
+  "free": {
+    "delay_seconds": 300,
+    "fields": ["regime", "risk"],
+    "notifications": false,
+    "confidence": false
+  },
+  "pro": {
+    "delay_seconds": 60,
+    "fields": ["regime", "risk", "confidence"],
+    "notifications": true,
+    "confidence": true
+  },
+  "premium": {
+    "delay_seconds": 0,
+    "fields": ["regime", "risk", "confidence", "exposure"],
+    "notifications": true,
+    "confidence": true,
+    "advanced": true
+  }
+}
