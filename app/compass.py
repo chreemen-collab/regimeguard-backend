@@ -1,19 +1,14 @@
+import json
+from pathlib import Path
 from typing import Dict
 from sqlalchemy.orm import Session
-from datetime import datetime
 from .models import MarketState
 
+TIERS = json.loads(
+    Path("app/tiers.json").read_text()
+)
 
-# =========================
-# 1. ESTADO INTERNO (desde DB)
-# =========================
-
-def compute_compass_state(db: Session, market_id: str) -> Dict:
-    """
-    Obtiene el último estado del mercado desde la DB
-    y lo normaliza al formato Compass.
-    """
-
+def compute_compass_state(db: Session, market_id: str) -> Dict | None:
     state = (
         db.query(MarketState)
         .filter(MarketState.market_id == market_id)
@@ -31,15 +26,10 @@ def compute_compass_state(db: Session, market_id: str) -> Dict:
             "risk": state.risk,
             "exposure": state.exposure
         },
-        "phase": state.regime,           # por ahora igual, luego se refina
+        "phase": state.regime,
         "alerts": state.regime in ["UNSTABLE", "ALERT"],
         "updated_at": state.timestamp.isoformat()
     }
-
-
-# =========================
-# 2. FILTRO POR TIER
-# =========================
 
 def build_compass_response(
     db: Session,
@@ -47,55 +37,31 @@ def build_compass_response(
     tier: str
 ) -> Dict:
 
-    data = compute_compass_state(db, market_id)
+    base = compute_compass_state(db, market_id)
 
-    if not data:
+    if not base:
         return {"message": "No data yet"}
 
-    if tier == "free":
-        return {
-            "state": data["state"],
-            "updated_at": data["updated_at"],
-            "delayed": True
-        }
-
-    if tier == "pro":
-        return {
-            "state": data["state"],
-            "confidence": data["confidence"],
-            "metrics": data["metrics"],
-            "updated_at": data["updated_at"]
-        }
-
-    if tier == "premium":
-        return {
-            "state": data["state"],
-            "confidence": data["confidence"],
-            "metrics": data["metrics"],
-            "phase": data["phase"],
-            "alerts": data["alerts"],
-            "updated_at": data["updated_at"]
-        }
-
-    return {"error": "invalid tier"}
-
-import json
-from pathlib import Path
-
-TIERS = json.loads(
-    Path("app/tiers.json").read_text()
-)
-
-def build_compass_response(state, tier: str):
     config = TIERS.get(tier, TIERS["free"])
 
-    data = {}
+    response = {
+        "state": base["state"],
+        "updated_at": base["updated_at"],
+        "tier": tier
+    }
 
-    for field in config["fields"]:
-        data[field] = getattr(state, field)
+    if "confidence" in config["fields"]:
+        response["confidence"] = base["confidence"]
 
-    data["tier"] = tier
-    data["delayed"] = config["delay_seconds"] > 0
+    if "metrics" in config["fields"]:
+        response["metrics"] = base["metrics"]
 
-    return data
+    if "phase" in config["fields"]:
+        response["phase"] = base["phase"]
 
+    if "alerts" in config["fields"]:
+        response["alerts"] = base["alerts"]
+
+    response["delayed"] = config["delay_seconds"] > 0
+
+    return response
