@@ -1,7 +1,3 @@
-MARKETS = {
-    "crypto": "Crypto Market",
-    "equities": "US Equities",
-    "rates": "Rates / Macro"
-}
+MARKETS = ["BTC", "ETH", "SPY"]
 
 ENGINE_UPDATE_MINUTES = 60
