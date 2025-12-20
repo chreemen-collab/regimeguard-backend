@@ -1,27 +1,39 @@
-from datetime import datetime
 from typing import Dict
+from sqlalchemy.orm import Session
+from datetime import datetime
+from .models import MarketState
 
 
 # =========================
-# 1. ESTADO INTERNO COMPLETO
+# 1. ESTADO INTERNO (desde DB)
 # =========================
 
-def compute_internal_state() -> Dict:
+def compute_compass_state(db: Session, market_id: str) -> Dict:
     """
-    Este representa TODO lo que tu sistema sabe.
-    Esto NO se expone completo nunca.
+    Obtiene el último estado del mercado desde la DB
+    y lo normaliza al formato Compass.
     """
+
+    state = (
+        db.query(MarketState)
+        .filter(MarketState.market_id == market_id)
+        .order_by(MarketState.timestamp.desc())
+        .first()
+    )
+
+    if not state:
+        return None
+
     return {
-        "state": "ALERT",              # CALM | WATCH | UNSTABLE | ALERT
-        "confidence": 97,              # 0–100
+        "state": state.regime,          # CALM | WATCH | UNSTABLE | ALERT
+        "confidence": state.confidence,
         "metrics": {
-            "volatility": 0.28,
-            "liquidity": 0.71,
-            "momentum": 0.85
+            "risk": state.risk,
+            "exposure": state.exposure
         },
-        "phase": "CONTRACTION",        # solo premium
-        "alerts": True,                # solo premium
-        "updated_at": datetime.utcnow().isoformat()
+        "phase": state.regime,           # por ahora igual, luego se refina
+        "alerts": state.regime in ["UNSTABLE", "ALERT"],
+        "updated_at": state.timestamp.isoformat()
     }
 
 
@@ -29,8 +41,16 @@ def compute_internal_state() -> Dict:
 # 2. FILTRO POR TIER
 # =========================
 
-def build_compass_response(tier: str) -> Dict:
-    data = compute_internal_state()
+def build_compass_response(
+    db: Session,
+    market_id: str,
+    tier: str
+) -> Dict:
+
+    data = compute_compass_state(db, market_id)
+
+    if not data:
+        return {"message": "No data yet"}
 
     if tier == "free":
         return {
@@ -57,7 +77,4 @@ def build_compass_response(tier: str) -> Dict:
             "updated_at": data["updated_at"]
         }
 
-    # fallback de seguridad
-    return {
-        "error": "invalid tier"
-    }
+    return {"error": "invalid tier"}
