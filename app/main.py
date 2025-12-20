@@ -64,3 +64,17 @@ def root():
         "docs": "/docs",
         "health": "/healthz"
     }
+
+@app.get("/")
+def root():
+    return {
+        "name": "RegimeGuard API",
+        "status": "online",
+        "version": "0.1.0",
+        "endpoints": {
+            "health": "/healthz",
+            "markets": "/markets",
+            "market_state": "/market/{market_id}",
+            "docs": "/docs"
+        }
+    }
