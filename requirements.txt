@@ -4,3 +4,6 @@ sqlalchemy
 pydantic
 apscheduler
 python-dotenv
+yfinance
+numpy
+pandas
