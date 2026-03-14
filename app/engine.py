@@ -51,10 +51,10 @@ def map_regime(intensity: float, trend: float, vol: float):
     else:
         risk = "LOW"
 
-    if intensity > 0.65 and trend > 0.3:
+    if intensity > 0.45 and trend > 0.15:
         regime, exposure = "HARD", "MED"
         confidence = "HIGH" if intensity > 0.8 else "MED"
-    elif intensity > 0.35 or trend > 0.1:
+    elif intensity > 0.20 or trend > 0.05:
         regime, exposure, confidence = "MICRO", "LOW", "MED"
     else:
         regime = "BASE"
